@@ -27,14 +27,14 @@
             
             <!-- Green felt with cutouts for pockets -->
             <path d="M40 40 
-                     L380 40 L420 40 
+                     L360 40 L440 40 
                      L760 40 L760 360 
-                     L420 360 L380 360 
+                     L440 360 L360 360 
                      L40 360 Z
-                     M40 40 A20 20 0 0 0 20 60 L20 340 A20 20 0 0 0 40 360
-                     M760 40 A20 20 0 0 1 780 60 L780 340 A20 20 0 0 1 760 360
-                     M380 40 A20 20 0 0 0 400 20 A20 20 0 0 0 420 40
-                     M380 360 A20 20 0 0 1 400 380 A20 20 0 0 1 420 360" 
+                     M40 40 A25 25 0 0 0 15 65 L15 335 A25 25 0 0 0 40 360
+                     M760 40 A25 25 0 0 1 785 65 L785 335 A25 25 0 0 1 760 360
+                     M360 40 A25 25 0 0 0 400 15 A25 25 0 0 0 440 40
+                     M360 360 A25 25 0 0 1 400 385 A25 25 0 0 1 440 360" 
                   fill="#006400"/>
             
             <!-- Pockets (holes) -->
@@ -171,11 +171,33 @@
             const dx = ball2.x - ball1.x;
             const dy = ball2.y - ball1.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
+            const minDistance = ball1.radius + ball2.radius;
             
-            if (distance < ball1.radius + ball2.radius) {
+            if (distance < minDistance) {
+                // Calculate the overlap
+                const overlap = minDistance - distance;
+                
+                // Move balls apart proportionally to their velocities
+                const totalVelocity = Math.sqrt(
+                    (ball1.vx * ball1.vx + ball1.vy * ball1.vy) +
+                    (ball2.vx * ball2.vx + ball2.vy * ball2.vy)
+                ) || 1; // Prevent division by zero
+                
+                const ball1Ratio = Math.sqrt(ball1.vx * ball1.vx + ball1.vy * ball1.vy) / totalVelocity;
+                const ball2Ratio = Math.sqrt(ball2.vx * ball2.vx + ball2.vy * ball2.vy) / totalVelocity;
+                
                 // Normal vector
                 const nx = dx / distance;
                 const ny = dy / distance;
+                
+                // Separate the balls
+                const separation1 = overlap * (1 - ball1Ratio);
+                const separation2 = overlap * (1 - ball2Ratio);
+                
+                ball1.x -= nx * separation1;
+                ball1.y -= ny * separation1;
+                ball2.x += nx * separation2;
+                ball2.y += ny * separation2;
                 
                 // Relative velocity
                 const dvx = ball2.vx - ball1.vx;
