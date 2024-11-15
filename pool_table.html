@@ -80,31 +80,31 @@
             <circle cx="634" cy="185" r="15" fill="black" stroke="white" stroke-width="1"/> <!-- 8 black -->
 
             <!-- Striped balls (9-15) -->
-            <g>
+            <g id="ball9" class="striped-ball">
                 <circle cx="634" cy="215" r="15" fill="white" stroke="black" stroke-width="1"/>
                 <path d="M634 200 a15 15 0 0 1 0 30 a15 15 0 0 1 0 -30" fill="#FDD017"/> <!-- 9 striped yellow -->
             </g>
-            <g>
+            <g id="ball10" class="striped-ball">
                 <circle cx="634" cy="245" r="15" fill="white" stroke="black" stroke-width="1"/>
                 <path d="M634 230 a15 15 0 0 1 0 30 a15 15 0 0 1 0 -30" fill="#2B65EC"/> <!-- 10 striped blue -->
             </g>
-            <g>
+            <g id="ball11" class="striped-ball">
                 <circle cx="662" cy="140" r="15" fill="white" stroke="black" stroke-width="1"/>
                 <path d="M662 125 a15 15 0 0 1 0 30 a15 15 0 0 1 0 -30" fill="#F62817"/> <!-- 11 striped red -->
             </g>
-            <g>
+            <g id="ball12" class="striped-ball">
                 <circle cx="662" cy="170" r="15" fill="white" stroke="black" stroke-width="1"/>
                 <path d="M662 155 a15 15 0 0 1 0 30 a15 15 0 0 1 0 -30" fill="#800080"/> <!-- 12 striped purple -->
             </g>
-            <g>
+            <g id="ball13" class="striped-ball">
                 <circle cx="662" cy="200" r="15" fill="white" stroke="black" stroke-width="1"/>
                 <path d="M662 185 a15 15 0 0 1 0 30 a15 15 0 0 1 0 -30" fill="#FF8C00"/> <!-- 13 striped orange -->
             </g>
-            <g>
+            <g id="ball14" class="striped-ball">
                 <circle cx="662" cy="230" r="15" fill="white" stroke="black" stroke-width="1"/>
                 <path d="M662 215 a15 15 0 0 1 0 30 a15 15 0 0 1 0 -30" fill="#4CC417"/> <!-- 14 striped green -->
             </g>
-            <g>
+            <g id="ball15" class="striped-ball">
                 <circle cx="662" cy="260" r="15" fill="white" stroke="black" stroke-width="1"/>
                 <path d="M662 245 a15 15 0 0 1 0 30 a15 15 0 0 1 0 -30" fill="#8B4513"/> <!-- 15 striped brown -->
             </g>
@@ -119,17 +119,38 @@
         let gameInMotion = false;
 
         // Track all balls
-        const balls = Array.from(document.querySelectorAll('circle')).filter(ball => 
-            ball.getAttribute('fill') !== 'black' || ball.getAttribute('stroke') === 'white'
-        ).map(ball => ({
-            element: ball,
-            x: ball.cx.baseVal.value,
-            y: ball.cy.baseVal.value,
-            vx: 0,
-            vy: 0,
-            radius: ball.r.baseVal.value,
-            isPocketed: false
-        }));
+        const balls = [];
+        
+        // Add solid balls
+        document.querySelectorAll('circle:not(.striped-ball circle)').forEach(ball => {
+            if (ball.getAttribute('fill') !== 'black' || ball.getAttribute('stroke') === 'white') {
+                balls.push({
+                    element: ball,
+                    group: null,
+                    x: ball.cx.baseVal.value,
+                    y: ball.cy.baseVal.value,
+                    vx: 0,
+                    vy: 0,
+                    radius: ball.r.baseVal.value,
+                    isPocketed: false
+                });
+            }
+        });
+
+        // Add striped balls
+        document.querySelectorAll('.striped-ball').forEach(group => {
+            const circle = group.querySelector('circle');
+            balls.push({
+                element: circle,
+                group: group,
+                x: circle.cx.baseVal.value,
+                y: circle.cy.baseVal.value,
+                vx: 0,
+                vy: 0,
+                radius: circle.r.baseVal.value,
+                isPocketed: false
+            });
+        });
 
         const cueBall = balls.find(ball => ball.element.getAttribute('fill') === 'white');
         
@@ -344,6 +365,15 @@
                 // Update ball position on screen
                 ball.element.setAttribute('cx', ball.x);
                 ball.element.setAttribute('cy', ball.y);
+                
+                // If it's a striped ball, update the whole group
+                if (ball.group) {
+                    const path = ball.group.querySelector('path');
+                    const pathD = path.getAttribute('d');
+                    const newD = pathD.replace(/M\d+\s+\d+\s+a/, `M${ball.x} ${ball.y-15} a`)
+                                    .replace(/\d+\s+\d+\s+a/, `${ball.x} ${ball.y-15} a`);
+                    path.setAttribute('d', newD);
+                }
             }
 
             // Check collisions between all pairs of balls
