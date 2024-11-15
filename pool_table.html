@@ -87,7 +87,7 @@
         
         // Mouse events for aiming
         svg.addEventListener('mousedown', (e) => {
-            if (ballInMotion) return;
+            if (gameInMotion) return;
             isDragging = true;
             aimLine.style.display = 'block';
             updateAimLine(e);
