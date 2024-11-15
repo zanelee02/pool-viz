@@ -177,10 +177,10 @@
                     const impulse = 2 * impactSpeed;
                     
                     // Update velocities
-                    ball1.vx += nx * impulse * 0.8; // 0.8 for energy loss
-                    ball1.vy += ny * impulse * 0.8;
-                    ball2.vx -= nx * impulse * 0.8;
-                    ball2.vy -= ny * impulse * 0.8;
+                    ball1.vx += nx * impulse * 0.7; // 0.7 for increased energy loss
+                    ball1.vy += ny * impulse * 0.7;
+                    ball2.vx -= nx * impulse * 0.7;
+                    ball2.vy -= ny * impulse * 0.7;
                     
                     // Separate balls to prevent sticking
                     const overlap = (ball1.radius + ball2.radius - distance) / 2;
@@ -207,20 +207,24 @@
 
                 // Bounce off walls
                 if (ball.x < 55 || ball.x > 745) {
-                    ball.vx *= -0.8;
+                    ball.vx *= -0.6;
                     ball.x = ball.x < 55 ? 55 : 745;
                 }
                 if (ball.y < 55 || ball.y > 345) {
-                    ball.vy *= -0.8;
+                    ball.vy *= -0.6;
                     ball.y = ball.y < 55 ? 55 : 345;
                 }
 
-                // Apply friction
-                ball.vx *= 0.99;
-                ball.vy *= 0.99;
+                // Apply friction (increased from 0.99)
+                ball.vx *= 0.97;
+                ball.vy *= 0.97;
+
+                // Stop balls if moving very slowly
+                if (Math.abs(ball.vx) < 0.05) ball.vx = 0;
+                if (Math.abs(ball.vy) < 0.05) ball.vy = 0;
 
                 // Check if ball is moving
-                if (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1) {
+                if (Math.abs(ball.vx) > 0.05 || Math.abs(ball.vy) > 0.05) {
                     anyBallMoving = true;
                 }
 
