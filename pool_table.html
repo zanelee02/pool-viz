@@ -13,7 +13,9 @@
             stroke: white;
             stroke-width: 1;
             stroke-dasharray: 5,5;
+            pointer-events: none;
             display: none;
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -112,8 +114,8 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            aimLine.setAttribute('x1', cueBall.cx.baseVal.value);
-            aimLine.setAttribute('y1', cueBall.cy.baseVal.value);
+            aimLine.setAttribute('x1', cueBall.x);
+            aimLine.setAttribute('y1', cueBall.y);
             aimLine.setAttribute('x2', x);
             aimLine.setAttribute('y2', y);
         }
@@ -138,6 +140,7 @@
         }
 
         function checkPocket(ball) {
+            // Pocket positions and their larger detection radius
             const pockets = [
                 {x: 20, y: 20}, {x: 400, y: 15}, {x: 780, y: 20},
                 {x: 20, y: 380}, {x: 400, y: 385}, {x: 780, y: 380}
@@ -147,7 +150,8 @@
                 const dx = ball.x - pocket.x;
                 const dy = ball.y - pocket.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 20) { // Pocket radius
+                // Increased pocket detection radius and check if ball is mostly over the pocket
+                if (distance < 25) { // Increased from 20 to 25
                     return true;
                 }
             }
