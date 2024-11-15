@@ -31,19 +31,19 @@
                      L760 40 L760 360 
                      L460 360 L340 360 
                      L40 360 Z
-                     M40 40 A35 35 0 0 0 15 75 L15 325 A35 35 0 0 0 40 360
-                     M760 40 A35 35 0 0 1 785 75 L785 325 A35 35 0 0 1 760 360
+                     M40 40 A35 35 0 0 0 15 15 L15 385 A35 35 0 0 0 40 360
+                     M760 40 A35 35 0 0 1 785 15 L785 385 A35 35 0 0 1 760 360
                      M340 40 A35 35 0 0 0 400 15 A35 35 0 0 0 460 40
                      M340 360 A35 35 0 0 1 400 385 A35 35 0 0 1 460 360"
                   fill="#006400"/>
             
             <!-- Pockets (holes) -->
-            <circle cx="15" cy="75" r="25" fill="black"/> <!-- Top left -->
+            <circle cx="15" cy="15" r="25" fill="black"/> <!-- Top left -->
             <circle cx="400" cy="15" r="25" fill="black"/> <!-- Top middle -->
-            <circle cx="785" cy="75" r="25" fill="black"/> <!-- Top right -->
-            <circle cx="15" cy="325" r="25" fill="black"/> <!-- Bottom left -->
+            <circle cx="785" cy="15" r="25" fill="black"/> <!-- Top right -->
+            <circle cx="15" cy="385" r="25" fill="black"/> <!-- Bottom left -->
             <circle cx="400" cy="385" r="25" fill="black"/> <!-- Bottom middle -->
-            <circle cx="785" cy="325" r="25" fill="black"/> <!-- Bottom right -->
+            <circle cx="785" cy="385" r="25" fill="black"/> <!-- Bottom right -->
             
             <!-- Cue ball (white) -->
             <circle cx="200" cy="200" r="15" fill="white" stroke="black" stroke-width="1"/>
@@ -150,8 +150,8 @@
 
         // Define pockets array at a higher scope
         const pockets = [
-            {x: 15, y: 75}, {x: 400, y: 15}, {x: 785, y: 75},
-            {x: 15, y: 325}, {x: 400, y: 385}, {x: 785, y: 325}
+            {x: 15, y: 15}, {x: 400, y: 15}, {x: 785, y: 15},
+            {x: 15, y: 385}, {x: 400, y: 385}, {x: 785, y: 385}
         ];
 
         function isNearPocket(ball) {
