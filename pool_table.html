@@ -25,8 +25,17 @@
             <!-- Table frame (brown rails) -->
             <rect x="0" y="0" width="800" height="400" fill="#8B4513" rx="20"/>
             
-            <!-- Green felt -->
-            <rect x="40" y="40" width="720" height="320" fill="#006400"/>
+            <!-- Green felt with cutouts for pockets -->
+            <path d="M40 40 
+                     L380 40 L420 40 
+                     L760 40 L760 360 
+                     L420 360 L380 360 
+                     L40 360 Z
+                     M40 40 A20 20 0 0 0 20 60 L20 340 A20 20 0 0 0 40 360
+                     M760 40 A20 20 0 0 1 780 60 L780 340 A20 20 0 0 1 760 360
+                     M380 40 A20 20 0 0 0 400 20 A20 20 0 0 0 420 40
+                     M380 360 A20 20 0 0 1 400 380 A20 20 0 0 1 420 360" 
+                  fill="#006400"/>
             
             <!-- Pockets (holes) -->
             <circle cx="20" cy="20" r="20" fill="black"/> <!-- Top left -->
@@ -180,11 +189,21 @@
                     // Collision impulse
                     const impulse = 2 * impactSpeed;
                     
-                    // Update velocities
-                    ball1.vx += nx * impulse * 0.7; // 0.7 for increased energy loss
-                    ball1.vy += ny * impulse * 0.7;
-                    ball2.vx -= nx * impulse * 0.7;
-                    ball2.vy -= ny * impulse * 0.7;
+                    // Calculate new velocities (perfect elastic collision with energy loss)
+                    const restitution = 0.95; // 5% energy loss on collision
+                
+                    // Calculate new velocities using conservation of momentum
+                    const m1 = 1; // All balls have equal mass
+                    const m2 = 1;
+                    const v1x = ball1.vx;
+                    const v1y = ball1.vy;
+                    const v2x = ball2.vx;
+                    const v2y = ball2.vy;
+                
+                    ball1.vx = (v1x * (m1 - m2) + (2 * m2 * v2x)) / (m1 + m2) * restitution;
+                    ball1.vy = (v1y * (m1 - m2) + (2 * m2 * v2y)) / (m1 + m2) * restitution;
+                    ball2.vx = (v2x * (m2 - m1) + (2 * m1 * v1x)) / (m1 + m2) * restitution;
+                    ball2.vy = (v2y * (m2 - m1) + (2 * m1 * v1y)) / (m1 + m2) * restitution;
                     
                     // Separate balls to prevent sticking
                     const overlap = (ball1.radius + ball2.radius - distance) / 2;
