@@ -151,8 +151,8 @@
         function checkPocket(ball) {
             // Pocket positions and their larger detection radius
             const pockets = [
-                {x: 20, y: 20}, {x: 400, y: 15}, {x: 780, y: 20},
-                {x: 20, y: 380}, {x: 400, y: 385}, {x: 780, y: 380}
+                {x: 15, y: 75}, {x: 400, y: 15}, {x: 785, y: 75},
+                {x: 15, y: 325}, {x: 400, y: 385}, {x: 785, y: 325}
             ];
             
             for (let pocket of pockets) {
@@ -250,14 +250,16 @@
                 ball.x += ball.vx;
                 ball.y += ball.vy;
 
-                // Bounce off walls
-                if (ball.x < 55 || ball.x > 745) {
-                    ball.vx *= -0.7;  // Less energy loss on rail bounces
-                    ball.x = ball.x < 55 ? 55 : 745;
-                }
-                if (ball.y < 55 || ball.y > 345) {
-                    ball.vy *= -0.7;  // Less energy loss on rail bounces
-                    ball.y = ball.y < 55 ? 55 : 345;
+                // Bounce off walls (but only if not near a pocket)
+                if (!isNearPocket(ball)) {
+                    if (ball.x < 55 || ball.x > 745) {
+                        ball.vx *= -0.7;  // Less energy loss on rail bounces
+                        ball.x = ball.x < 55 ? 55 : 745;
+                    }
+                    if (ball.y < 55 || ball.y > 345) {
+                        ball.vy *= -0.7;  // Less energy loss on rail bounces
+                        ball.y = ball.y < 55 ? 55 : 345;
+                    }
                 }
 
                 // Apply friction - adjusted for more natural deceleration
