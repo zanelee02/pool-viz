@@ -139,8 +139,8 @@
             const dy = y - cueBall.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Scale factor for speed (adjust as needed)
-            const power = 0.1;
+            // Scale factor for speed - increased for more powerful breaks
+            const power = 0.3;
             cueBall.vx = -(dx / distance) * power * distance;
             cueBall.vy = -(dy / distance) * power * distance;
             
@@ -212,7 +212,7 @@
                     const impulse = 2 * impactSpeed;
                     
                     // Calculate new velocities (perfect elastic collision with energy loss)
-                    const restitution = 0.95; // 5% energy loss on collision
+                    const restitution = 0.98; // 2% energy loss on collision
                 
                     // Calculate new velocities using conservation of momentum
                     const m1 = 1; // All balls have equal mass
@@ -260,13 +260,13 @@
                     ball.y = ball.y < 55 ? 55 : 345;
                 }
 
-                // Apply friction (increased from 0.99)
-                ball.vx *= 0.97;
-                ball.vy *= 0.97;
+                // Apply friction - reduced for longer roll
+                ball.vx *= 0.985;
+                ball.vy *= 0.985;
 
                 // Stop balls if moving very slowly
-                if (Math.abs(ball.vx) < 0.05) ball.vx = 0;
-                if (Math.abs(ball.vy) < 0.05) ball.vy = 0;
+                if (Math.abs(ball.vx) < 0.01) ball.vx = 0;
+                if (Math.abs(ball.vy) < 0.01) ball.vy = 0;
 
                 // Check if ball is moving
                 if (Math.abs(ball.vx) > 0.05 || Math.abs(ball.vy) > 0.05) {
