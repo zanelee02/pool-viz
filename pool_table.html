@@ -7,6 +7,13 @@
             display: flex;
             justify-content: center;
             margin: 20px;
+            cursor: crosshair;
+        }
+        #aimLine {
+            stroke: white;
+            stroke-width: 1;
+            stroke-dasharray: 5,5;
+            display: none;
         }
     </style>
 </head>
@@ -53,7 +60,105 @@
             <circle cx="662" cy="200" r="15" fill="orange" stroke="black" stroke-width="1"/> <!-- 13 -->
             <circle cx="662" cy="230" r="15" fill="green" stroke="black" stroke-width="1"/> <!-- 14 -->
             <circle cx="662" cy="260" r="15" fill="brown" stroke="black" stroke-width="1"/> <!-- 15 -->
+            <!-- Aim line -->
+            <line id="aimLine" x1="0" y1="0" x2="0" y2="0"/>
         </svg>
     </div>
+    <script>
+        const svg = document.querySelector('svg');
+        const cueBall = document.querySelector('circle[fill="white"]');
+        const aimLine = document.querySelector('#aimLine');
+        let isDragging = false;
+        let ballInMotion = false;
+        let velocity = { x: 0, y: 0 };
+        
+        // Mouse events for aiming
+        svg.addEventListener('mousedown', (e) => {
+            if (ballInMotion) return;
+            isDragging = true;
+            aimLine.style.display = 'block';
+            updateAimLine(e);
+        });
+
+        svg.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                updateAimLine(e);
+            }
+        });
+
+        svg.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                shoot(e);
+                isDragging = false;
+                aimLine.style.display = 'none';
+            }
+        });
+
+        function updateAimLine(e) {
+            const rect = svg.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            aimLine.setAttribute('x1', cueBall.cx.baseVal.value);
+            aimLine.setAttribute('y1', cueBall.cy.baseVal.value);
+            aimLine.setAttribute('x2', x);
+            aimLine.setAttribute('y2', y);
+        }
+
+        function shoot(e) {
+            const rect = svg.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Calculate velocity based on distance
+            const dx = x - cueBall.cx.baseVal.value;
+            const dy = y - cueBall.cy.baseVal.value;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Scale factor for speed (adjust as needed)
+            const power = 0.1;
+            velocity.x = -(dx / distance) * power * distance;
+            velocity.y = -(dy / distance) * power * distance;
+            
+            ballInMotion = true;
+            requestAnimationFrame(animate);
+        }
+
+        function animate() {
+            if (!ballInMotion) return;
+
+            // Update position
+            let x = cueBall.cx.baseVal.value + velocity.x;
+            let y = cueBall.cy.baseVal.value + velocity.y;
+
+            // Bounce off walls
+            if (x < 55 || x > 745) {
+                velocity.x *= -0.8; // Lose some energy on bounce
+                x = x < 55 ? 55 : 745;
+            }
+            if (y < 55 || y > 345) {
+                velocity.y *= -0.8; // Lose some energy on bounce
+                y = y < 55 ? 55 : 345;
+            }
+
+            // Apply friction
+            velocity.x *= 0.99;
+            velocity.y *= 0.99;
+
+            // Stop if moving very slowly
+            if (Math.abs(velocity.x) < 0.1 && Math.abs(velocity.y) < 0.1) {
+                ballInMotion = false;
+                velocity.x = 0;
+                velocity.y = 0;
+                return;
+            }
+
+            // Update ball position
+            cueBall.setAttribute('cx', x);
+            cueBall.setAttribute('cy', y);
+
+            requestAnimationFrame(animate);
+        }
+    </script>
 </body>
 </html>
