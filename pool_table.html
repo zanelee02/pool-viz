@@ -66,11 +66,24 @@
     </div>
     <script>
         const svg = document.querySelector('svg');
-        const cueBall = document.querySelector('circle[fill="white"]');
         const aimLine = document.querySelector('#aimLine');
         let isDragging = false;
-        let ballInMotion = false;
-        let velocity = { x: 0, y: 0 };
+        let gameInMotion = false;
+
+        // Track all balls
+        const balls = Array.from(document.querySelectorAll('circle')).filter(ball => 
+            ball.getAttribute('fill') !== 'black' || ball.getAttribute('stroke') === 'white'
+        ).map(ball => ({
+            element: ball,
+            x: ball.cx.baseVal.value,
+            y: ball.cy.baseVal.value,
+            vx: 0,
+            vy: 0,
+            radius: ball.r.baseVal.value,
+            isPocketed: false
+        }));
+
+        const cueBall = balls.find(ball => ball.element.getAttribute('fill') === 'white');
         
         // Mouse events for aiming
         svg.addEventListener('mousedown', (e) => {
@@ -111,51 +124,132 @@
             const y = e.clientY - rect.top;
             
             // Calculate velocity based on distance
-            const dx = x - cueBall.cx.baseVal.value;
-            const dy = y - cueBall.cy.baseVal.value;
+            const dx = x - cueBall.x;
+            const dy = y - cueBall.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             // Scale factor for speed (adjust as needed)
             const power = 0.1;
-            velocity.x = -(dx / distance) * power * distance;
-            velocity.y = -(dy / distance) * power * distance;
+            cueBall.vx = -(dx / distance) * power * distance;
+            cueBall.vy = -(dy / distance) * power * distance;
             
-            ballInMotion = true;
+            gameInMotion = true;
             requestAnimationFrame(animate);
         }
 
+        function checkPocket(ball) {
+            const pockets = [
+                {x: 20, y: 20}, {x: 400, y: 15}, {x: 780, y: 20},
+                {x: 20, y: 380}, {x: 400, y: 385}, {x: 780, y: 380}
+            ];
+            
+            for (let pocket of pockets) {
+                const dx = ball.x - pocket.x;
+                const dy = ball.y - pocket.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 20) { // Pocket radius
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function handleCollision(ball1, ball2) {
+            const dx = ball2.x - ball1.x;
+            const dy = ball2.y - ball1.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < ball1.radius + ball2.radius) {
+                // Normal vector
+                const nx = dx / distance;
+                const ny = dy / distance;
+                
+                // Relative velocity
+                const dvx = ball2.vx - ball1.vx;
+                const dvy = ball2.vy - ball1.vy;
+                
+                // Impact speed
+                const impactSpeed = dvx * nx + dvy * ny;
+                
+                // Don't process collision if balls are moving apart
+                if (impactSpeed < 0) {
+                    // Collision impulse
+                    const impulse = 2 * impactSpeed;
+                    
+                    // Update velocities
+                    ball1.vx += nx * impulse * 0.8; // 0.8 for energy loss
+                    ball1.vy += ny * impulse * 0.8;
+                    ball2.vx -= nx * impulse * 0.8;
+                    ball2.vy -= ny * impulse * 0.8;
+                    
+                    // Separate balls to prevent sticking
+                    const overlap = (ball1.radius + ball2.radius - distance) / 2;
+                    ball1.x -= nx * overlap;
+                    ball1.y -= ny * overlap;
+                    ball2.x += nx * overlap;
+                    ball2.y += ny * overlap;
+                }
+            }
+        }
+
         function animate() {
-            if (!ballInMotion) return;
+            if (!gameInMotion) return;
+            
+            let anyBallMoving = false;
 
-            // Update position
-            let x = cueBall.cx.baseVal.value + velocity.x;
-            let y = cueBall.cy.baseVal.value + velocity.y;
+            // Update all balls
+            for (let ball of balls) {
+                if (ball.isPocketed) continue;
 
-            // Bounce off walls
-            if (x < 55 || x > 745) {
-                velocity.x *= -0.8; // Lose some energy on bounce
-                x = x < 55 ? 55 : 745;
+                // Update position
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+
+                // Bounce off walls
+                if (ball.x < 55 || ball.x > 745) {
+                    ball.vx *= -0.8;
+                    ball.x = ball.x < 55 ? 55 : 745;
+                }
+                if (ball.y < 55 || ball.y > 345) {
+                    ball.vy *= -0.8;
+                    ball.y = ball.y < 55 ? 55 : 345;
+                }
+
+                // Apply friction
+                ball.vx *= 0.99;
+                ball.vy *= 0.99;
+
+                // Check if ball is moving
+                if (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1) {
+                    anyBallMoving = true;
+                }
+
+                // Check if ball is pocketed
+                if (!ball.isPocketed && checkPocket(ball)) {
+                    ball.isPocketed = true;
+                    ball.element.style.display = 'none';
+                    continue;
+                }
+
+                // Update ball position on screen
+                ball.element.setAttribute('cx', ball.x);
+                ball.element.setAttribute('cy', ball.y);
             }
-            if (y < 55 || y > 345) {
-                velocity.y *= -0.8; // Lose some energy on bounce
-                y = y < 55 ? 55 : 345;
+
+            // Check collisions between all pairs of balls
+            for (let i = 0; i < balls.length; i++) {
+                for (let j = i + 1; j < balls.length; j++) {
+                    if (!balls[i].isPocketed && !balls[j].isPocketed) {
+                        handleCollision(balls[i], balls[j]);
+                    }
+                }
             }
 
-            // Apply friction
-            velocity.x *= 0.99;
-            velocity.y *= 0.99;
-
-            // Stop if moving very slowly
-            if (Math.abs(velocity.x) < 0.1 && Math.abs(velocity.y) < 0.1) {
-                ballInMotion = false;
-                velocity.x = 0;
-                velocity.y = 0;
+            // Stop animation if no balls are moving
+            if (!anyBallMoving) {
+                gameInMotion = false;
                 return;
             }
-
-            // Update ball position
-            cueBall.setAttribute('cx', x);
-            cueBall.setAttribute('cy', y);
 
             requestAnimationFrame(animate);
         }
