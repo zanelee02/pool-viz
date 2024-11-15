@@ -148,19 +148,33 @@
             requestAnimationFrame(animate);
         }
 
-        function checkPocket(ball) {
-            // Pocket positions and their larger detection radius
-            const pockets = [
-                {x: 15, y: 75}, {x: 400, y: 15}, {x: 785, y: 75},
-                {x: 15, y: 325}, {x: 400, y: 385}, {x: 785, y: 325}
-            ];
-            
+        // Define pockets array at a higher scope
+        const pockets = [
+            {x: 15, y: 75}, {x: 400, y: 15}, {x: 785, y: 75},
+            {x: 15, y: 325}, {x: 400, y: 385}, {x: 785, y: 325}
+        ];
+
+        function isNearPocket(ball) {
             for (let pocket of pockets) {
                 const dx = ball.x - pocket.x;
                 const dy = ball.y - pocket.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                // Increased pocket detection radius and check if ball is mostly over the pocket
-                if (distance < 25) { // Increased from 20 to 25
+                if (distance < 40) { // Larger radius for rail bounce prevention
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkPocket(ball) {
+            for (let pocket of pockets) {
+                const dx = ball.x - pocket.x;
+                const dy = ball.y - pocket.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 25) {
+                    // Add a "sinking" effect
+                    ball.vx *= 0.5;
+                    ball.vy *= 0.5;
                     return true;
                 }
             }
